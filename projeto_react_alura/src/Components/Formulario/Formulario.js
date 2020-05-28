@@ -1,6 +1,11 @@
 import React, { Component } from 'react'
+import TextField from '@material-ui/core/TextField'
+import Grid from '@material-ui/core/Grid'
+import Button from '@material-ui/core/Button'
+
 import FormValidator from '../../Utils/FormValidator'
 import PopUp from '../../Utils/PopUp'
+import Toast from '../Toast/Toast'
 
 class Formulario extends Component{
 
@@ -33,8 +38,14 @@ class Formulario extends Component{
       nome:'',
       livro:'',
       preco:'',
-      validacao: this.validador.valido()
+      validacao: this.validador.valido(),
+      message: {
+        open: false,
+        texto:'',
+        tipo:'success'
+      }
     }
+
     this.state = this.stateInicial
   }
 
@@ -55,8 +66,16 @@ class Formulario extends Component{
       const camposInvalidos = campos.filter(elem => {
         return elem.isInvalid
       })
-      camposInvalidos.forEach(campo => {
-        PopUp.exibeMensagem('error', campo.message)
+      const erros = camposInvalidos.reduce(
+        (texto, campo) => `${texto} ${campo.message}.`, ''
+        )
+
+      this.setState({
+        message:{
+          open: true,
+          texto: erros,
+          tipo: 'error'
+        }
       })
     }
   }
@@ -73,49 +92,66 @@ class Formulario extends Component{
     const {nome, livro, preco} = this.state
 
     return(
-      <form>
-        <div className='row'>
-          <div className='input-field col s4'>
-            <label className='input-field' htmlFor="nome">Nome</label>
-            <input 
-              className= 'validate'
-              id='nome'
-              type="text"
-              name='nome'
-              value={nome}
-              onChange={this.escutadorDeInput} />
-          </div>
+      <>
+        <Toast 
+          open={this.state.message.open} 
+          handleClose={() => this.setState({
+              message: {
+                open: false
+              }
+            })}
+          severity={this.state.message.tipo}
+        > 
+          {this.state.message.texto}
+        </Toast>
+        <form>
+          <Grid container spacing={2} alignItems='center'>
+            <Grid item >
+              <TextField 
+                id='nome' 
+                name='nome'
+                label='Nome' 
+                variant='outlined' 
+                value={nome}
+                onChange={this.escutadorDeInput}
+              />
+            </Grid>
 
-          <div className="input-field col s4">
-            <label className='input-field' htmlFor="livro">Livro</label>
-            <input 
-              id='livro'
-              type="text"
-              name='livro'
-              value={livro}
-              onChange={this.escutadorDeInput} />
-          </div>
+            <Grid item >
+              <TextField
+                id='livro'
+                label='Livro'
+                name='livro'
+                variant='outlined'
+                value={livro}
+                onChange={this.escutadorDeInput}
+              />
+            </Grid>
 
-          <div className="input-field col s4">
-            <label className='input-field' htmlFor="preco">Preco</label>
-            <input 
-              id='preco'
-              type="text"
-              name='preco'
-              value={preco}
-              onChange={this.escutadorDeInput} />            
-          </div>
-        </div>
+            <Grid item >
+            <TextField
+                id='preco'
+                label='Preço'
+                name='preco'
+                variant='outlined'
+                value={preco}
+                onChange={this.escutadorDeInput}
+              />       
+            </Grid>
+            <Grid item >
+              <Button 
+                color='primary'
+                onClick={this.submitForm}
+                type='button'
+                variant='contained'
+                > Salvar
+              </Button>
+            </Grid>
+          </Grid>
 
-        <button 
-          className="btn waves-effect waves-light green lighten-2b" 
-          type="button" 
-          name="action"
-          onClick={this.submitForm}>enviar
-          <i className="material-icons right">send</i>
-        </button>
 
-      </form>
+        </form>
+      </>
     )
   }
 }
